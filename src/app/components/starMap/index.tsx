@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Canvas, useLoader, useFrame } from "@react-three/fiber";
 import { Physics } from "@react-three/cannon";
@@ -8,26 +9,23 @@ import { useRef, useState } from "react";
 import PlanetModal from "../planetModal";
 import { planets } from "@/app/constants/planets";
 
-function SphereWithTexture({
-  position,
-  texturePath,
-  onClick,
-  rotationSpeed = 0.01,
-}) {
+function SphereWithTexture({ position, texturePath, onClick }: any) {
   const texture = useLoader(THREE.TextureLoader, texturePath);
-  const meshRef = useRef();
 
   // Adiciona rotação contínua
-  useFrame(() => {
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  useFrame((state, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += rotationSpeed; // Ajuste a velocidade da rotação
+      meshRef.current.rotation.y += delta;
     }
   });
 
   return (
     <mesh ref={meshRef} position={position} onClick={onClick}>
       <sphereGeometry args={[1, 32, 32]} /> {/* Ajustar raio se necessário */}
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial
+        map={Array.isArray(texture) ? texture[0] : texture}
+      />
     </mesh>
   );
 }
@@ -46,7 +44,7 @@ export default function StarMap() {
   // Texturas dos planetas
   const planetTextures = ["/terra.webp", "/planetaAzul.png", "/marte.png"];
 
-  const openModal = (planet, position) => {
+  const openModal = (planet: any, position?: any) => {
     setTargetPosition(position);
     setTimeout(() => {
       setSelectedPlanet(planet);
@@ -57,7 +55,7 @@ export default function StarMap() {
   return (
     <div className="bg-black h-screen flex justify-center items-center">
       <Canvas>
-        <animated.perspectiveCamera position={cameraPosition}>
+        <animated.perspectiveCamera position={cameraPosition as any}>
           <OrbitControls />
           <ambientLight intensity={2} />
           <Stars />
@@ -72,6 +70,7 @@ export default function StarMap() {
                   name: "Sol",
                   description: "O Sol é a estrela central do Sistema Solar.",
                   size: 5, // Tamanho do Sol
+
                   texturePath: "/sol.png",
                 })
               }

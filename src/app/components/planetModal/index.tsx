@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import React, { useRef } from "react";
 import {
@@ -17,16 +18,20 @@ import * as THREE from "three";
 // Componente para a esfera com textura
 function SphereWithTexture({ position, texturePath, args }: any) {
   const texture = useLoader(THREE.TextureLoader, texturePath);
-  const meshRef = useRef();
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(1, 1);
-  useFrame((state, delta) => (meshRef.current.rotation.y += delta));
+
+  const meshRef = useRef<THREE.Mesh | null>(null);
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta;
+    }
+  });
 
   return (
     <mesh ref={meshRef} position={position}>
       <sphereGeometry args={args} />
-      <meshStandardMaterial map={texture} />
+      <meshStandardMaterial
+        map={Array.isArray(texture) ? texture[0] : texture}
+      />
     </mesh>
   );
 }
